@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>${title}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        function deleteEntry(id) {
+            fetch('/admin/users/' + id, {
+                method: 'DELETE'
+            }).then(function (response) {
+                if (response.ok) {
+                    window.location.reload();
+                }
+            });
+        }
+        function renderTable(response) {
+            if (response.ok) {
+                response.json().then(function ({ users, pagination }) {
+                    var table = document.getElementById("table-body");
+                    for (var i = 0; i < users.length; i++) {
+                        const tableElement = document.createElement("tr");
+                        tableElement.className = "bg-gray-50 border-b dark:bg-gray-800 dark:border-gray-700";
+                        const innerElement = document.createElement("th");
+                        innerElement.className = "py-4 px-6 font-medium text-gray-900 whitespace-nowrap dark:text-white";
+                        innerElement.scope = "row";
+                        innerElement.innerText = users[i].id;
+                        const innerElement2 = document.createElement("td");
+                        innerElement2.className = "px-4 py-3";
+                        innerElement2.innerText = users[i].name;
+                        const innerElement3 = document.createElement("td");
+                        innerElement3.className = "px-4 py-3";
+                        innerElement3.innerText = users[i].dob;
+                        const innerElement4 = document.createElement("td");
+                        innerElement4.className = "px-4 py-3";
+                        innerElement4.innerText = users[i].country;
+                        const innerElement5 = document.createElement("td");
+                        innerElement5.className = "px-4 py-3";
+                        const viewResume = document.createElement("a");
+                        viewResume.className = "px-4 py-3";
+                        viewResume.innerText = "View Resume";
+                        viewResume.href = users[i].resume;
+                        viewResume.target = "_blank";
+                        const downloadResume = document.createElement("a");
+                        downloadResume.className = "px-4 py-3";
+                        downloadResume.innerHTML = "Download Resume";
+                        downloadResume.href = users[i].resume;
+                        downloadResume.download = "resume.pdf";
+                        innerElement5.appendChild(viewResume);
+                        innerElement5.appendChild(downloadResume);
+                        const innerElement6 = document.createElement("td");
+                        innerElement6.className = "px-4 py-3 flex flex-row";
+                        const deleteButton = document.createElement("button");
+                        deleteButton.id = i;
+                        deleteButton.className = "px-4 py-3";
+                        deleteButton.innerHTML = "Delete";
+                        deleteButton.onclick = (event) => deleteEntry(users[event.target.id].id);
+                        innerElement6.appendChild(deleteButton);
+                        tableElement.appendChild(innerElement);
+                        tableElement.appendChild(innerElement2);
+                        tableElement.appendChild(innerElement3);
+                        tableElement.appendChild(innerElement4);
+                        tableElement.appendChild(innerElement5);
+                        tableElement.appendChild(innerElement6);
+                        table.appendChild(tableElement);
+                    }
+                });
+            }
+        }
+        function loadData(filters) {
+            const search = document.getElementById("search").value;
+            const searchBy = document.getElementById("searchBy").value;
+            fetch('/admin/users').then(renderTable);
+        }
+       function search() {
+            const search = document.getElementById("search").value;
+            const searchBy = document.getElementById("searchBy").value;
+            fetch('/admin/users?search=true&searchValue=' + search + "&searchBy=" + searchBy).then(renderTable);
+        }
+    </script>
+</head>
+
+<body onload="loadData()">
+    <div class="overflow-x-auto relative shadow-md sm:rounded-lg">
+        <div
+            class="flex flex-col sm:flex-row items-center justify-between p-4 bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+            <div class="flex flex-col sm:flex-row items-center">
+                <div class="relative">
+                    <input type="text" id="search"
+                        class="w-64 h-10 pl-10 pr-4 rounded-full text-sm focus:outline-none focus:shadow-outline"
+                        placeholder="Search...">
+                    <div class="absolute top-0 left-0 inline-flex items-center h-full ml-2 pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-500 fill-current" viewBox="0 0 24 24">
+                            <path class="heroicon-ui"
+                                d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="relative ml-4 sm:ml-6">
+                    <select id="searchBy"
+                        class="w-64 h-10 pl-3 pr-6 text-gray-600 bg-white rounded-full text-sm focus:outline-none focus:shadow-outline">
+                        <option value={null}>Filter by</option>
+                        <option value="name">Name</option>
+                        <option value="country">Country</option>
+                        <option value="dob">Date of Birth</option>
+                        <option value="created_date">Created Date</option>
+                    </select>
+                    <div class="absolute top-0 right-0 inline-flex items-center h-full px-2 pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-500 fill-current" viewBox="0 0 20 20">
+                            <path class="heroicon-ui" d="M7 7l3-3 3 3m0 6l-3 3-3-3"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center mt-4 sm:mt-0">
+                <button onclick="search()"
+                    class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-blue-600 border border-transparent rounded-lg active:bg-blue-600 hover:bg-blue-700 focus:outline-none focus:shadow-outline-blue">
+                    Submit
+                </button>
+            </div>
+        </div>
+        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                    <th scope="col" class="py-3 px-6">
+                        Id
+                    </th>
+                    <th scope="col" class="py-3 px-6">
+                        Name
+                    </th>
+                    <th scope="col" class="py-3 px-6">
+                        Date of Birth
+                    </th>
+                    <th scope="col" class="py-3 px-6">
+                        Country
+                    </th>
+                    <th scope="col" class="py-3 px-6">
+                        Resume
+                    </th>
+                    <th scope="col" class="py-3 px-6">
+                        Action
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+
+            </tbody>
+            <tfoot class="bg-gray-50
+            dark:bg-gray-800">
+                <tr>
+                    <td colspan="6" class="py-3 px-6 text-xs text-gray-700 dark:text-gray-400">
+                        <div class="flex items
+                        center justify-between">
+                            <span>Showing 1 to 10 of 57 entries</span>
+                            <div class="flex items
+                            center">
+                                <button
+                                    class="w-8 h-8 mr-1 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
+                                    <svg class="w-3 h-3 text-gray-600 dark:text-gray-400 inline-block mx-auto"
+                                        viewBox="0 0 12 12">
+                                        <path fill="currentColor"
+                                            d="M6 2a.997.997 0 0 0-.707.293L.293 7.707A.999.999 0 1 0 1.707 9.12L6 4.828l4.293 4.293a.999.999 0 1 0 1.414-1.414L6.707 2.293A.997.997 0 0 0 6 2z">
+                                        </path>
+                                    </svg>
+                                </button>
+                                <button
+                                    class="w-8 h-8 mr-1 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
+                                    <svg class="w-3 h-3 text-gray-600 dark:text-gray-400 inline-block mx-auto"
+                                        viewBox="0 0 12 12">
+                                        <path fill="currentColor"
+                                            d="M6 2a.997.997 0 0 0-.707.293L.293 7.707A.999.999 0 1 0 1.707 9.12L6 4.828l4.293 4.293a.999.999 0 1 0 1.414-1.414L6.707 2.293A.997.997 0 0 0 6 2z">
+                                        </path>
+                                    </svg>
+                                </button>
+                                <button
+                                    class="w-8 h-8 mr-1 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
+                                    <svg class="w-3 h-3 text-gray-600 dark:text-gray-400 fill-current mx-auto"
+                                        viewBox="0 0 12 12">
+                                        <path class="heroicon-ui" d="M6 10a1 1 0 0 1-1-1V5a1 1 0 0
+                                            1 2 0v4a1 1 0 0 1-1 1zm0-6a1 1 0 0 1-1-1V3a1 1 0 0 1 2 0v1a1 1 0 0 1-1 1z">
+                                        </path>
+                                    </svg>
+                                </button>
+                                <button
+                                    class="w-8 h-8 mr-1 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
+                                    <svg class="w-3 h-3 text-gray-600 dark:text-gray-400 fill-current mx-auto"
+                                        viewBox="0 0 12 12">
+                                        <path class="heroicon-ui"
+                                            d="M7.41 6L12 1.41 10.59 0 6 4.59 1.41 0 0 1.41 4.59 6 0 10.59 1.41 12 6 7.41 10.59 12 12 10.59 7.41 6z">
+                                        </path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+        <div id="data" hidden>
+            ${users}
+        </div>
+    </div>
+
+</html>
